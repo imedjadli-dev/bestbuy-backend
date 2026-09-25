@@ -1,5 +1,6 @@
 package com.bestbuy.user;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +28,16 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User request) {
-        return ResponseEntity.ok(userService.createUser(request));
+        return new ResponseEntity<>(userService.createUser(request),
+                HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateUserById(
+            @PathVariable Long id,
+            @RequestBody User userDetails
+    ) {
+        return ResponseEntity.ok(userService.updateUserById(id, userDetails));
     }
 
     @DeleteMapping("/{id}")
