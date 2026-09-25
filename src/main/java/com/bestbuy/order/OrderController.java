@@ -1,5 +1,6 @@
 package com.bestbuy.order;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +35,7 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<Order> createOrder(
             @RequestParam Long userId,
-            @RequestBody List<OrderItem> items
+            @Valid @RequestBody List<OrderItem> items
     ) {
         return new ResponseEntity<>(orderService.createOrder(userId, items),
                 HttpStatus.CREATED);

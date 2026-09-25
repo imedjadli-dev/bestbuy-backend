@@ -1,5 +1,7 @@
 package com.bestbuy.user;
 
+import com.bestbuy.user.dto.UserResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,17 +19,17 @@ public class UserController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User request) {
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody User request) {
         return new ResponseEntity<>(userService.createUser(request),
                 HttpStatus.CREATED);
     }
@@ -35,7 +37,7 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUserById(
             @PathVariable Long id,
-            @RequestBody User userDetails
+            @Valid @RequestBody User userDetails
     ) {
         return ResponseEntity.ok(userService.updateUserById(id, userDetails));
     }

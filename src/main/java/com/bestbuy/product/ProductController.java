@@ -1,5 +1,6 @@
 package com.bestbuy.product;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product request) {
+    public ResponseEntity<Product> createProduct(@Valid @RequestBody Product request) {
         return new ResponseEntity<>(productService.createProduct(request),
                 HttpStatus.CREATED);
     }
@@ -36,7 +37,7 @@ public class ProductController {
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(
             @PathVariable Long id,
-            @RequestBody Product request
+            @Valid @RequestBody Product request
     ) {
         return ResponseEntity.ok(productService.updateProductById(id, request));
     }
