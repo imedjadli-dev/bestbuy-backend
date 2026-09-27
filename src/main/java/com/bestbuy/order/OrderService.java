@@ -1,5 +1,7 @@
 package com.bestbuy.order;
 
+import com.bestbuy.order.dto.OrderItemResponse;
+import com.bestbuy.order.dto.OrderResponse;
 import com.bestbuy.product.Product;
 import com.bestbuy.product.ProductNotFoundException;
 import com.bestbuy.product.ProductRepository;
@@ -29,20 +31,22 @@ public class OrderService {
         this.productRepository = productRepository;
     }
 
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+    public List<OrderResponse> getAllOrders() {
+        return orderRepository.findAll().stream().map(this::mapToResponse).toList();
     }
 
-    public Order getOrderById(Long id) {
-        return orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id));
+    public OrderResponse getOrderById(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException(id));
+        return mapToResponse(order);
     }
 
-    public List<Order> getOrdersByUserId(Long userId) {
-        return orderRepository.findOrderByUserId(userId);
+    public List<OrderResponse> getOrdersByUserId(Long userId) {
+        return orderRepository.findOrderByUserId(userId).stream().map(this::mapToResponse).toList();
     }
 
     @Transactional
-    public Order createOrder(Long userId, List<OrderItem> items) {
+    public OrderResponse createOrder(Long userId, List<OrderItem> items) {
         User user =
                 userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
@@ -74,6 +78,27 @@ public class OrderService {
         }
 
         order.setTotalAmount(totalAmount);
-        return orderRepository.save(order);
+        return mapToResponse(orderRepository.save(order));
+    }
+
+    private OrderResponse mapToResponse(Order order) {
+        List<OrderItemResponse> itemResponses = order.getItems().stream()
+                .map(item -> OrderItemResponse.builder()
+                        .id(item.getId())
+                        .productId(item.getProduct().getId())
+                        .productName(item.getProduct().getName())
+                        .unitPrice(item.getUnit_price())
+                        .quantity(item.getQuantity())
+                        .build()
+                ).toList();
+
+        return OrderResponse.builder()
+                .id(order.getId())
+                .userId(order.getUser().getId())
+                .totalAmount(order.getTotalAmount())
+                .status(order.getStatus())
+                .createdAt(order.getCreatedAt())
+                .items(itemResponses)
+                .build();
     }
 }
