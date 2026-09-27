@@ -1,4 +1,4 @@
-package com.bestbuy.order;
+package com.bestbuy.order.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

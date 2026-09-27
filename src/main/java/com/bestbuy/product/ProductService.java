@@ -2,6 +2,7 @@ package com.bestbuy.product;
 
 import com.bestbuy.product.dto.ProductRequest;
 import com.bestbuy.product.dto.ProductResponse;
+import com.bestbuy.product.exception.ProductNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

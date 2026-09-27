@@ -2,6 +2,8 @@ package com.bestbuy.user;
 
 import com.bestbuy.user.dto.UserRequest;
 import com.bestbuy.user.dto.UserResponse;
+import com.bestbuy.user.exception.EmailAlreadyExistsException;
+import com.bestbuy.user.exception.UserNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

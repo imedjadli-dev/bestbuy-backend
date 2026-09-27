@@ -1,10 +1,10 @@
 package com.bestbuy.exception;
 
-import com.bestbuy.order.InsufficientStockException;
-import com.bestbuy.order.OrderNotFoundException;
-import com.bestbuy.product.ProductNotFoundException;
-import com.bestbuy.user.EmailAlreadyExistsException;
-import com.bestbuy.user.UserNotFoundException;
+import com.bestbuy.order.exception.InsufficientStockException;
+import com.bestbuy.order.exception.OrderNotFoundException;
+import com.bestbuy.product.exception.ProductNotFoundException;
+import com.bestbuy.user.exception.EmailAlreadyExistsException;
+import com.bestbuy.user.exception.UserNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

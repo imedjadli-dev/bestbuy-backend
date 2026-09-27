@@ -4,12 +4,14 @@ import com.bestbuy.order.dto.OrderItemRequest;
 import com.bestbuy.order.dto.OrderItemResponse;
 import com.bestbuy.order.dto.OrderRequest;
 import com.bestbuy.order.dto.OrderResponse;
+import com.bestbuy.order.exception.InsufficientStockException;
+import com.bestbuy.order.exception.OrderNotFoundException;
 import com.bestbuy.product.Product;
-import com.bestbuy.product.ProductNotFoundException;
 import com.bestbuy.product.ProductRepository;
+import com.bestbuy.product.exception.ProductNotFoundException;
 import com.bestbuy.user.User;
-import com.bestbuy.user.UserNotFoundException;
 import com.bestbuy.user.UserRepository;
+import com.bestbuy.user.exception.UserNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
