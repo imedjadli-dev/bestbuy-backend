@@ -1,6 +1,8 @@
 package com.bestbuy.order;
 
+import com.bestbuy.order.dto.OrderItemRequest;
 import com.bestbuy.order.dto.OrderItemResponse;
+import com.bestbuy.order.dto.OrderRequest;
 import com.bestbuy.order.dto.OrderResponse;
 import com.bestbuy.product.Product;
 import com.bestbuy.product.ProductNotFoundException;
@@ -46,9 +48,12 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse createOrder(Long userId, List<OrderItem> items) {
-        User user =
-                userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+    public OrderResponse createOrder(
+            Long userId,
+            OrderRequest request
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         Order order = new Order();
         order.setUser(user);
@@ -56,29 +61,33 @@ public class OrderService {
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
-        for (OrderItem item : items) {
-            Product product =
-                    productRepository.findById(item.getProduct().getId()).orElseThrow(() -> new ProductNotFoundException(item.getProduct().getId()));
+        for (OrderItemRequest itemRequest : request.getItems()) {
+            Product product = productRepository.findById(itemRequest.getProductId())
+                    .orElseThrow(() -> new ProductNotFoundException(itemRequest.getProductId()));
 
-            if (product.getStockQuantity() < item.getQuantity()) {
-                throw new InsufficientStockException(product.getName(),
-                        item.getQuantity(), product.getStockQuantity());
+            if (product.getStockQuantity() < itemRequest.getQuantity()) {
+                throw new InsufficientStockException(
+                        product.getName(), itemRequest.getQuantity(), product.getStockQuantity()
+                );
             }
 
-            product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
+            product.setStockQuantity(product.getStockQuantity() - itemRequest.getQuantity());
 
-            item.setUnit_price(product.getPrice());
-            item.setProduct(product);
+            OrderItem orderItem = new OrderItem();
+            orderItem.setProduct(product);
+            orderItem.setQuantity(itemRequest.getQuantity());
+            orderItem.setUnitPrice(product.getPrice());
 
-            BigDecimal itemTotal =
-                    product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+            BigDecimal itemTotal = product.getPrice().multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
             totalAmount = totalAmount.add(itemTotal);
 
-            order.addOrderItem(item);
+            order.addOrderItem(orderItem);
         }
 
         order.setTotalAmount(totalAmount);
-        return mapToResponse(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+
+        return mapToResponse(savedOrder);
     }
 
     private OrderResponse mapToResponse(Order order) {
@@ -87,7 +96,7 @@ public class OrderService {
                         .id(item.getId())
                         .productId(item.getProduct().getId())
                         .productName(item.getProduct().getName())
-                        .unitPrice(item.getUnit_price())
+                        .unitPrice(item.getUnitPrice())
                         .quantity(item.getQuantity())
                         .build()
                 ).toList();

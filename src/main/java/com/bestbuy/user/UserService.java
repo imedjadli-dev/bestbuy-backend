@@ -1,5 +1,6 @@
 package com.bestbuy.user;
 
+import com.bestbuy.user.dto.UserRequest;
 import com.bestbuy.user.dto.UserResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,19 +28,27 @@ public class UserService {
                 .toList();
     }
 
-    public UserResponse createUser(User user) {
+    public UserResponse createUser(UserRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new EmailAlreadyExistsException(request.getEmail());
+        }
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setFullname(request.getFullname());
+        user.setPasswordHash(request.getPassword());
+        user.setRole(request.getRole());
         User savedUser = userRepository.save(user);
         return mapToResponse(savedUser);
     }
 
     @Transactional
-    public User updateUserById(Long id, User userDetails) {
+    public UserResponse updateUserById(Long id, UserRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
-        user.setEmail(userDetails.getEmail());
-        user.setFullname(userDetails.getFullname());
+        user.setEmail(request.getEmail());
+        user.setFullname(request.getFullname());
 
-        return userRepository.save(user);
+        return mapToResponse(userRepository.save(user));
     }
 
     public void deleteUserById(Long id) {
