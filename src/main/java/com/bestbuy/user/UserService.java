@@ -1,5 +1,9 @@
 package com.bestbuy.user;
 
+import com.bestbuy.user.dto.UserRequest;
+import com.bestbuy.user.dto.UserResponse;
+import com.bestbuy.user.exception.EmailAlreadyExistsException;
+import com.bestbuy.user.exception.UserNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,25 +18,39 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public UserResponse getUserById(Long id) {
+        User user =
+                userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+        return mapToResponse(user);
     }
 
-    public User createUser(User user) {
-        return userRepository.save(user);
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll()
+                .stream().map(this::mapToResponse)
+                .toList();
     }
 
-    public User getUserById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+    public UserResponse createUser(UserRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new EmailAlreadyExistsException(request.getEmail());
+        }
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setFullname(request.getFullname());
+        user.setPasswordHash(request.getPassword());
+        user.setRole(request.getRole());
+        User savedUser = userRepository.save(user);
+        return mapToResponse(savedUser);
     }
 
     @Transactional
-    public User updateUserById(Long id, User userDetails) {
-        User user = getUserById(id);
-        user.setEmail(userDetails.getEmail());
-        user.setFullname(userDetails.getFullname());
+    public UserResponse updateUserById(Long id, UserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+        user.setEmail(request.getEmail());
+        user.setFullname(request.getFullname());
 
-        return userRepository.save(user);
+        return mapToResponse(userRepository.save(user));
     }
 
     public void deleteUserById(Long id) {
@@ -40,5 +58,14 @@ public class UserService {
             throw new UserNotFoundException(id);
         }
         userRepository.deleteById(id);
+    }
+
+    private UserResponse mapToResponse(User user) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .fullname(user.getFullname())
+                .role(user.getRole())
+                .build();
     }
 }

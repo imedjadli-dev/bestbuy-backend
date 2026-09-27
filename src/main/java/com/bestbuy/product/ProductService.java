@@ -1,5 +1,8 @@
 package com.bestbuy.product;
 
+import com.bestbuy.product.dto.ProductRequest;
+import com.bestbuy.product.dto.ProductResponse;
+import com.bestbuy.product.exception.ProductNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,28 +17,41 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<ProductResponse> getAllProducts() {
+        return productRepository.findAll().stream().map(this::mapToResponse).toList();
     }
 
-    public Product getProductById(Long id) {
-        return productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
+    public ProductResponse getProductById(Long id) {
+        Product product =
+                productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
+        return mapToResponse(product);
     }
 
-    public Product createProduct(Product product) {
-        return productRepository.save(product);
+    public ProductResponse createProduct(ProductRequest request) {
+        Product product = new Product();
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setPrice(request.getPrice());
+        product.setStockQuantity(request.getStockQuantity());
+        Product savedProduct =
+                productRepository.save(product);
+        return mapToResponse(savedProduct);
     }
 
     @Transactional
-    public Product updateProductById(Long id, Product productDetails) {
-        Product product = getProductById(id);
+    public ProductResponse updateProductById(Long id, ProductRequest request) {
+        Product product =
+                productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
 
-        product.setName(productDetails.getName());
-        product.setDescription(productDetails.getDescription());
-        product.setPrice(productDetails.getPrice());
-        product.setStockQuantity(productDetails.getStockQuantity());
 
-        return productRepository.save(product);
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setPrice(request.getPrice());
+        product.setStockQuantity(request.getStockQuantity());
+
+        Product updatedProduct = productRepository.save(product);
+
+        return mapToResponse(updatedProduct);
     }
 
     public void deleteProductById(Long id) {
@@ -44,5 +60,16 @@ public class ProductService {
         }
 
         productRepository.deleteById(id);
+    }
+
+    private ProductResponse mapToResponse(Product product) {
+        return ProductResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .stockQuantity(product.getStockQuantity())
+                .build();
+
     }
 }
